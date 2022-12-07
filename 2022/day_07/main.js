@@ -9,10 +9,6 @@ class File {
     getSize() {
         return this.size
     }
-
-    toString() {
-        return `${this.size} {this.name}`
-    }
 }
 
 class Directory {
@@ -75,10 +71,6 @@ class FileSystem {
         } else {
             console.warn('could not find', name)
         }
-    }
-
-    toString() {
-
     }
 }
 
