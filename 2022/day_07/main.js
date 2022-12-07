@@ -34,7 +34,7 @@ class Directory {
         return this.children.filter(child => child instanceof Directory)
     }
 
-    getAllDirectories() {
+    getAllDescendantDirectories() {
         const getChildDirs = (dir) => {
             return [...dir.getChildDirectories(), ...dir.getChildDirectories().flatMap(d => getChildDirs(d))]
         }
@@ -99,14 +99,14 @@ for await (const line of input.readLines()) {
 }
 
 // Part 1
-const sum = fs.root.getAllDirectories().reduce((sum, dir) => {
+const sum = fs.root.getAllDescendantDirectories().reduce((sum, dir) => {
     const size = dir.getSize()
     return sum + (size > 100_000 ? 0 : size)
 }, 0)
 console.log('Total size of dirs not exceeding 100_000:', sum);
 
 // Part 2
-const sortedDirs = fs.root.getAllDirectories().sort((a, b) => a.getSize() - b.getSize())
+const sortedDirs = fs.root.getAllDescendantDirectories().sort((a, b) => a.getSize() - b.getSize())
 const totalSize = fs.root.getSize();
 const sizeToFree = totalSize - (70_000_000 - 30_000_000);
 const dirToDelete = sortedDirs.find(dir => dir.getSize() > sizeToFree);
