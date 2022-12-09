@@ -42,7 +42,7 @@ const drawTailVisited = (pos: Position) => {
 }
 
 
-const rope: [Position[], Position[], Position[], Position[], Position[], Position[], Position[], Position[], Position[], Position[],] = [
+const rope: Position[][] = [
   [{ x: 0, y: 0 }],
   [{ x: 0, y: 0 }],
   [{ x: 0, y: 0 }],
@@ -83,9 +83,12 @@ window.addEventListener('keypress', evt => {
 
     const head = headPath.slice(-1)[0]
     const tail = tailPath.slice(-1)[0]
+    const distance = dist(head, tail);
 
-    if (headPath.length > tailPath.length && dist(head, tail) >= 2) {
-      tailPath.push(headPath.slice(-2)[0])
+    if (headPath.length > tailPath.length && distance >= 2 && distance < 2.5) {
+      tailPath.push(findClosestNeighbour(head, tail))
+    } else if (distance >= 2.5) {
+      tailPath.push(findAnyNeighbour(head, tail))
     }
   }
 })
@@ -94,6 +97,50 @@ const dist = (pos1: Position, pos2: Position): number => {
   return Math.sqrt((pos1.x - pos2.x) ** 2 + (pos1.y - pos2.y) ** 2)
 }
 
+const findClosestNeighbour = (head: Position, tail: Position) => {
+  const neighbours = [
+    { x: head.x - 1, y: head.y },
+    { x: head.x + 1, y: head.y },
+    { x: head.x, y: head.y - 1 },
+    { x: head.x, y: head.y + 1 }
+  ]
+  const closestNeighbour = neighbours.reduce((currentClosest, neighbour) => {
+    const oldDistance = dist(currentClosest, tail)
+    const distance = dist(neighbour, tail)
+    if (distance < oldDistance) {
+      currentClosest = neighbour
+    }
+
+    return currentClosest
+  })
+
+  return closestNeighbour
+}
+
+
+const findAnyNeighbour = (head: Position, tail: Position) => {
+  const neighbours = [
+    { x: head.x - 1, y: head.y },
+    { x: head.x + 1, y: head.y },
+    { x: head.x + 1, y: head.y + 1 },
+    { x: head.x - 1, y: head.y - 1 },
+    { x: head.x + 1, y: head.y - 1 },
+    { x: head.x - 1, y: head.y + 1 },
+    { x: head.x, y: head.y - 1 },
+    { x: head.x, y: head.y + 1 }
+  ]
+  const closestNeighbour = neighbours.reduce((currentClosest, neighbour) => {
+    const oldDistance = dist(currentClosest, tail)
+    const distance = dist(neighbour, tail)
+    if (distance < oldDistance) {
+      currentClosest = neighbour
+    }
+
+    return currentClosest
+  })
+
+  return closestNeighbour
+}
 
 const draw = () => {
   const headPath = rope[0]
@@ -106,7 +153,7 @@ const draw = () => {
   ctx.fillRect(0, 0, canvas.width, canvas.height)
 
   ctx.save()
-  ctx.translate(0, canvas.height)
+  ctx.translate(canvas.width / 2 - CHAR_SIZE, canvas.height / 2 - CHAR_SIZE)
 
   for (const p of headPath) {
     drawHeadVisited(p)
@@ -117,7 +164,7 @@ const draw = () => {
 
   for (let i = 1; i < rope.length - 1; i++) {
     const pos = rope[i].slice(-1)[0]
-    drawChar(`${i + 1}`, pos, true)
+    drawChar(`${i}`, pos, true)
   }
 
   drawTail(tail)
