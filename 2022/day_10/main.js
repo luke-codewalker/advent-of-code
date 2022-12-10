@@ -25,7 +25,7 @@ for await (const instruction of instructions) {
     for (let i = 0; i < cyclesToAdd; i++) {
         cycles++
 
-        if (cycles === 20 || (cycles > 20 && (cycles - 20) % 40 === 0)) {
+        if (cycles % 40 === 20) {
             signalStrengths.push(cycles * xRegister)
         }
     }
