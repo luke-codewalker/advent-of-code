@@ -71,7 +71,7 @@ class Monkey {
             return Math.floor(newWorryLevel() / 3);
         } else {
             // Part 2
-            return newWorryLevel()
+            return newWorryLevel() % this.testDivider
         }
     }
 
@@ -82,57 +82,56 @@ class Monkey {
 
 const input = await open('./test.txt');
 let monkeyDescription = ''
-const monkeys = []
+const monkeysPart1 = []
+const monkeysPart2 = []
 for await (const line of input.readLines()) {
     if (line !== '') {
         monkeyDescription += line + '\n'
     } else {
-        monkeys.push(new Monkey(monkeyDescription));
+        monkeysPart1.push(new Monkey(monkeyDescription));
+        monkeysPart2.push(new Monkey(monkeyDescription));
         monkeyDescription = ''
     }
 }
-monkeys.push(new Monkey(monkeyDescription));
+monkeysPart1.push(new Monkey(monkeyDescription));
+monkeysPart2.push(new Monkey(monkeyDescription));
 
-
-const part1Monkeys = monkeys.slice()
 for (let _ = 0; _ < 20; _++) {
-    for (let x = 0; x < part1Monkeys.length; x++) {
-        const monkey = part1Monkeys[x]
+    for (let x = 0; x < monkeysPart1.length; x++) {
+        const monkey = monkeysPart1[x]
         const n = monkey.items.length
         for (let i = 0; i < n; i++) {
             const level = monkey.items.shift()
             const newLevel = monkey.inspectItem(level, true)
 
             if (monkey.test(newLevel)) {
-                part1Monkeys[monkey.trueMonkeyIndex].items.push(newLevel)
+                monkeysPart1[monkey.trueMonkeyIndex].items.push(newLevel)
             } else {
-                part1Monkeys[monkey.falseMonkeyIndex].items.push(newLevel)
+                monkeysPart1[monkey.falseMonkeyIndex].items.push(newLevel)
             }
         }
     }
 }
 
-part1Monkeys.sort((a, b) => b.inspectionCount - a.inspectionCount)
-console.log(`Amount of monkey businness: ${part1Monkeys[0].inspectionCount * part1Monkeys[1].inspectionCount}`)
+monkeysPart1.sort((a, b) => b.inspectionCount - a.inspectionCount)
+console.log(`Amount of monkey businness: ${monkeysPart1[0].inspectionCount * monkeysPart1[1].inspectionCount}`)
 
-// const part2Monkeys = monkeys.slice()
-// for (let _ = 0; _ < 10_000; _++) {
-//     for (let x = 0; x < part2Monkeys.length; x++) {
-//         const monkey = part2Monkeys[x]
-//         const n = monkey.items.length
-//         for (let i = 0; i < n; i++) {
-//             const level = monkey.items.shift()
-//             const newLevel = monkey.inspectItem(level, false)
+for (let _ = 0; _ < 10_000; _++) {
+    for (let x = 0; x < monkeysPart2.length; x++) {
+        const monkey = monkeysPart2[x]
+        const n = monkey.items.length
+        for (let i = 0; i < n; i++) {
+            const level = monkey.items.shift()
+            const newLevel = monkey.inspectItem(level, false)
 
-//             if (monkey.test(newLevel)) {
-//                 part2Monkeys[monkey.trueMonkeyIndex].items.push(newLevel)
-//             } else {
-//                 part2Monkeys[monkey.falseMonkeyIndex].items.push(newLevel)
-//             }
-//         }
-//     }
-//     console.log('part 2, round', _);
-// }
-
-// part2Monkeys.sort((a, b) => b.inspectionCount - a.inspectionCount)
-// console.log(`Amount of monkey businness: ${part2Monkeys[0].inspectionCount * part2Monkeys[1].inspectionCount}`)
+            if (monkey.test(newLevel)) {
+                monkeysPart2[monkey.trueMonkeyIndex].items.push(newLevel)
+            } else {
+                monkeysPart2[monkey.falseMonkeyIndex].items.push(newLevel)
+            }
+        }
+    }
+}
+console.log(monkeysPart2);
+monkeysPart2.sort((a, b) => b.inspectionCount - a.inspectionCount)
+console.log(`Amount of monkey businness: ${monkeysPart2[0].inspectionCount * monkeysPart2[1].inspectionCount}`)
