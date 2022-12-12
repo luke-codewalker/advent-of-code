@@ -14,6 +14,9 @@ const makeSubtract = (x) => (y) => {
     return makeValue(x - y)
 }
 
+const LEAST_COMMON_MULTIPLE = 9_699_690 // hard-coded because at this point I don't care anymore 
+// const LEAST_COMMON_MULTIPLE = 96_577 // for test.txt
+
 class Monkey {
     constructor(monkeyDescriptionString) {
         const itemsString = monkeyDescriptionString.match(/Starting items: (\d+.*)/)[1] ?? '';
@@ -71,7 +74,9 @@ class Monkey {
             return Math.floor(newWorryLevel() / 3);
         } else {
             // Part 2
-            return newWorryLevel() % this.testDivider
+            // we are only interested in modulo remainders for the test function
+            // therefore we can do a modulo by the least common mutiple to avoid integer overflow
+            return newWorryLevel() % LEAST_COMMON_MULTIPLE
         }
     }
 
@@ -80,7 +85,7 @@ class Monkey {
     }
 }
 
-const input = await open('./test.txt');
+const input = await open('./input.txt');
 let monkeyDescription = ''
 const monkeysPart1 = []
 const monkeysPart2 = []
