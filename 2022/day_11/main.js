@@ -121,7 +121,7 @@ for (let _ = 0; _ < 20; _++) {
 monkeysPart1.sort((a, b) => b.inspectionCount - a.inspectionCount)
 console.log(`Amount of monkey businness: ${monkeysPart1[0].inspectionCount * monkeysPart1[1].inspectionCount}`)
 
-for (let _ = 0; _ < 10_000; _++) {
+for (let _ = 0; _ < 20; _++) {
     for (let x = 0; x < monkeysPart2.length; x++) {
         const monkey = monkeysPart2[x]
         const n = monkey.items.length
@@ -130,9 +130,9 @@ for (let _ = 0; _ < 10_000; _++) {
             const newLevel = monkey.inspectItem(level, false)
 
             if (monkey.test(newLevel)) {
-                monkeysPart2[monkey.trueMonkeyIndex].items.push(newLevel)
+                monkeysPart2[monkey.trueMonkeyIndex].items.push(newLevel % monkeysPart2[monkey.trueMonkeyIndex].testDivider)
             } else {
-                monkeysPart2[monkey.falseMonkeyIndex].items.push(newLevel)
+                monkeysPart2[monkey.falseMonkeyIndex].items.push(newLevel % monkeysPart2[monkey.falseMonkeyIndex].testDivider)
             }
         }
     }
