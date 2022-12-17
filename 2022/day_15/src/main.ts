@@ -124,6 +124,7 @@ const renderMap = () => {
 }
 
 // Part 1
+console.time('Part 1')
 let occupiedPositions = 0
 const y = 10; // test
 // const y = 20_00_000; // input
@@ -144,9 +145,11 @@ for (let x = map.topLeft.x - map.maxDistance; x <= map.bottomRight.x + map.maxDi
 // renderMap()
 
 console.log(occupiedPositions);
+console.timeEnd('Part 1')
 
 
 // Part 2
+console.time('Part 2')
 // const limit = 20 // test
 const limit = 4000000
 const findSensor = () => {
@@ -171,4 +174,5 @@ const findSensor = () => {
 
 const position = findSensor()!;
 console.log(position.x * 4000000 + position?.y);
+console.timeEnd('Part 2')
 
