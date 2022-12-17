@@ -1,4 +1,5 @@
 import { open } from 'node:fs/promises';
+const INPUT_FILE = `${process.cwd()}/data/input.txt`;
 
 type Position = { x: number, y: number };
 type Direction = 'vertical' | 'horizontal'
@@ -19,14 +20,17 @@ class Cave {
     topLeft: Position = { x: 500, y: 0 }
     bottomRight: Position = { x: 500, y: 0 }
     sandFallingIntoAbyss = false;
+    sandUpToOrigin = false;
 
-    addRockPath(pathDescription: string) {
+    addRockPath(pathDescription: string, affectRenderView = true) {
         const points = pathDescription.split(' -> ')
         for (let i = 0; i < points.length - 1; i++) {
             const start = parsePointString(points[i]);
             const end = parsePointString(points[i + 1]);
 
-            this.saveExtremes(start, end);
+            if (affectRenderView) {
+                this.saveExtremes(start, end);
+            }
 
             const direction: Direction = start.x === end.x ? 'vertical' : 'horizontal';
             const length = direction === 'horizontal' ? end.x - start.x : end.y - start.y;
@@ -78,15 +82,22 @@ class Cave {
             const diff = diffs[i];
             const posBelowActiveSand = { x: this.#activeSand.x + diff.x, y: this.#activeSand.y + diff.y }
 
-            if (posBelowActiveSand.y > this.bottomRight.y) {
+            // exit condition for Part 1, the sand falls endlessly
+            if (posBelowActiveSand.y > this.bottomRight.y + 3) {
                 this.sandFallingIntoAbyss = true
                 return
             }
+
 
             if (!this.collidesWithRock(posBelowActiveSand) && !this.collidesWithSand(posBelowActiveSand)) {
                 this.#activeSand = posBelowActiveSand
                 return
             }
+        }
+
+        // exit condition for part 2, the sand comes to rest at origin
+        if (this.#activeSand.x === this.#sandOrigin.x && this.#activeSand.y === this.#sandOrigin.y) {
+            this.sandUpToOrigin = true
         }
 
         this.sand.add(`${this.#activeSand.x},${this.#activeSand.y}`)
@@ -96,17 +107,17 @@ class Cave {
     render() {
         console.clear()
         let display = '';
-        for (let row = this.topLeft.y - 1; row <= this.bottomRight.y + 1; row++) {
-            for (let col = this.topLeft.x - 1; col <= this.bottomRight.x + 1; col++) {
-                let pixel = '.'
+        for (let row = this.topLeft.y - 1; row <= this.bottomRight.y + 2; row++) {
+            for (let col = this.topLeft.x - 6; col <= this.bottomRight.x + 6; col++) {
+                let pixel = ' '
                 if (this.collidesWithRock({ x: col, y: row })) {
                     pixel = '#'
                 }
                 if (this.collidesWithSand({ x: col, y: row })) {
-                    pixel = 'o'
+                    pixel = '.'
                 }
                 if ((this.#activeSand.x === col && this.#activeSand.y === row)) {
-                    pixel = 'x'
+                    pixel = 'o'
                 }
                 if (this.#sandOrigin.x === col && this.#sandOrigin.y === row) {
                     pixel = '+'
@@ -121,12 +132,14 @@ class Cave {
 }
 
 const cave = new Cave()
-const file = await open(`${process.cwd()}/data/input.txt`);
+const file = await open(INPUT_FILE);
 for await (const line of file.readLines()) {
     cave.addRockPath(line)
 }
 
-// Part 1 visualization for test data
+// Part 1 
+
+// visualization for test data
 // const draw = () => {
 //     cave.update()
 //     cave.render()
@@ -136,7 +149,28 @@ for await (const line of file.readLines()) {
 // }
 // draw()
 
-while (!cave.sandFallingIntoAbyss) {
+// while (!cave.sandFallingIntoAbyss) {
+//     cave.update()
+// }
+// console.log(cave.sand.size);
+
+
+// Part 2
+// end endless rock floow at bottom
+cave.addRockPath(`${-99999},${cave.bottomRight.y + 2} -> ${99999},${cave.bottomRight.y + 2}`, false)
+
+
+// visualization for test data
+// const draw = () => {
+//     cave.update()
+//     cave.render()
+//     if (!cave.sandUpToOrigin) {
+//         setTimeout(draw, 16)
+//     }
+// }
+// draw()
+
+while (!cave.sandUpToOrigin) {
     cave.update()
 }
 console.log(cave.sand.size);
