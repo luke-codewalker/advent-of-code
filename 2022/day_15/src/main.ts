@@ -20,6 +20,30 @@ const manhattanDistance = (pos1: Position, pos2: Position): number => {
     return Math.abs(pos1.x - pos2.x) + Math.abs(pos1.y - pos2.y)
 }
 
+function* manhattanCircle(center: Position, radius: number) {
+    let pos = { x: center.x, y: center.y - radius }
+
+    while (pos.y < center.y) {
+        yield pos;
+        pos = { x: pos.x + 1, y: pos.y + 1 }
+    }
+
+    while (pos.x > center.x) {
+        yield pos;
+        pos = { x: pos.x - 1, y: pos.y + 1 }
+    }
+
+    while (pos.y > center.y) {
+        yield pos;
+        pos = { x: pos.x - 1, y: pos.y - 1 }
+    }
+
+    while (pos.x < center.x) {
+        yield pos;
+        pos = { x: pos.x + 1, y: pos.y - 1 }
+    }
+}
+
 const findTopLeftPosition = (positions: Position[]): Position => {
     return positions.reduce((extreme, pos) => {
         extreme.x = Math.min(extreme.x, pos.x)
@@ -53,6 +77,14 @@ for await (const line of file.readLines()) {
 
 const renderMap = () => {
     let output = '';
+    let circlePos: Position[] = []
+
+    // demo for part 2
+    for (const pos of manhattanCircle(sensors[5].position, sensors[5].distance)) {
+        circlePos.push(pos)
+    }
+
+
     for (let y = map.topLeft.y - map.maxDistance; y <= map.bottomRight.y + map.maxDistance; y++) {
         output += `${y}\t`
 
@@ -77,6 +109,10 @@ const renderMap = () => {
                 if ((x === 0 || x === 20) && !pixel.match(/[BS]/)) {
                     pixel = '|'
                 }
+
+                if (circlePos.find(pos => pos.x === x && pos.y === y)) {
+                    pixel = 'o'
+                }
             })
             output += pixel
         }
@@ -89,8 +125,8 @@ const renderMap = () => {
 
 // Part 1
 let occupiedPositions = 0
-// const y = 10; // test
-const y = 20_00_000; // input
+const y = 10; // test
+// const y = 20_00_000; // input
 for (let x = map.topLeft.x - map.maxDistance; x <= map.bottomRight.x + map.maxDistance; x++) {
     const sensor = sensors.find(sensor => {
         const distToSensor = manhattanDistance({ x, y }, sensor.position)
@@ -108,3 +144,31 @@ for (let x = map.topLeft.x - map.maxDistance; x <= map.bottomRight.x + map.maxDi
 // renderMap()
 
 console.log(occupiedPositions);
+
+
+// Part 2
+// const limit = 20 // test
+const limit = 4000000
+const findSensor = () => {
+    for (let i = 0; i < sensors.length; i++) {
+        const sensor = sensors[i];
+
+        for (const pos of manhattanCircle(sensor.position, sensor.distance + 1)) {
+            if (pos.x < 0 || pos.y < 0 || pos.x > limit || pos.y > limit) {
+                continue
+            }
+
+            const otherSensors = sensors.slice()
+            otherSensors.splice(i, 1)
+
+            const sensorsLeft = otherSensors.filter(other => manhattanDistance(other.position, pos) <= other.distance)
+            if (sensorsLeft.length === 0) {
+                return pos
+            }
+        }
+    }
+}
+
+const position = findSensor()!;
+console.log(position.x * 4000000 + position?.y);
+
