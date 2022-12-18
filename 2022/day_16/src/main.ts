@@ -9,24 +9,20 @@ type Valve = {
     connections: string[]
 }
 
-class PipeSystem {
-    valves: Valve[] = []
+const parseValveDescription = (description: string): Valve => {
+    const name = description.match(/Valve (\w+)\s/)?.[1]!;
+    const flowRate = parseInt(description.match(/rate=(\d+)/)?.[1]!);
+    const connections = description.match(/to valve[s]? (.+)/)?.[1].split(',')!;
 
-    addValve(description: string) {
-        const name = description.match(/Valve (\w+)\s/)?.[1]!;
-        const flowRate = parseInt(description.match(/rate=(\d+)/)?.[1]!);
-        const connections = description.match(/to valve[s]? (.+)/)?.[1].split(',')!;
-
-        this.valves.push({
-            open: false,
-            name, flowRate, connections
-        })
+    return {
+        open: false,
+        name, flowRate, connections
     }
 }
 
-const pipes = new PipeSystem()
+const pipes: Valve[] = []
 for await (const line of file.readLines()) {
-    pipes.addValve(line)
+    pipes.push(parseValveDescription(line))
 }
 
 
