@@ -10,10 +10,11 @@ export class Open {
 }
 
 export class Noop {
+    constructor(public target: ValveID) { }
 }
 
 export type Action = Move | Open | Noop
 
 export const example = [
-    new Move('DD'), new Open('DD'), new Move('CC'), new Move('BB'), new Open('BB'), new Move('AA'), new Move('II'), new Move('JJ'), new Open('JJ'), new Move('II'), new Move('AA'), new Move('DD'), new Move('EE'), new Move('FF'), new Move('GG'), new Move('HH'), new Open('HH'), new Move('GG'), new Move('FF'), new Move('EE'), new Open('EE'), new Move('DD'), new Move('CC'), new Open('CC'), new Noop(), new Noop(), new Noop(), new Noop(), new Noop(), new Noop(),
+    new Noop('AA'), new Move('DD'), new Open('DD'), new Move('CC'), new Move('BB'), new Open('BB'), new Move('AA'), new Move('II'), new Move('JJ'), new Open('JJ'), new Move('II'), new Move('AA'), new Move('DD'), new Move('EE'), new Move('FF'), new Move('GG'), new Move('HH'), new Open('HH'), new Move('GG'), new Move('FF'), new Move('EE'), new Open('EE'), new Move('DD'), new Move('CC'), new Open('CC'), new Noop('CC'), new Noop('CC'), new Noop('CC'), new Noop('CC'), new Noop('CC'), new Noop('CC'),
 ]
