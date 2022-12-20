@@ -1,39 +1,54 @@
 import { open } from 'node:fs/promises';
-const INPUT_FILE = `${process.cwd()}/data/test.txt`;
+const INPUT_FILE = `${process.cwd()}/data/input.txt`;
 
 const file = await open(INPUT_FILE);
 
 const numbers: number[] = []
+
 for await (const line of file.readLines()) {
-    numbers.push(parseInt(line))
+    const int = parseInt(line);
+    numbers.push(int === 0 ? int : int + Math.random())
 }
 
-const moveElement = (array: number[], from: number, to: number): number[] => {
-    const number = array.splice(from, 1)[0];
-    array.splice(to, 0, number);
-    return array;
-}
+const norm: number[][] = [
+    [2, 1, -3, 3, -2, 0, 4],
+    [1, -3, 2, 3, -2, 0, 4],
+    [1, 2, 3, -2, -3, 0, 4],
+    [1, 2, -2, -3, 0, 3, 4],
+    [1, 2, -3, 0, 3, 4, -2],
+    [1, 2, -3, 0, 3, 4, -2],
+    [1, 2, -3, 4, 0, 3, -2]]
 
-const findNewIndex = (index: number, number: number, arrayLength: number): number => {
-    const newIndex = (index + number) % arrayLength;    
-    if (newIndex < 0) { 
-        return newIndex + arrayLength;
-    } else {
-        return newIndex;
-    }
-}
+let mixedSignal = numbers.slice();
 
+for (let i = 0; i < numbers.length; i++) {
 
-
-let part1Numbers = numbers.slice();
-for (let i = 0; i < part1Numbers.length; i++) {
     const number = numbers[i];
-    const newIndex = findNewIndex(part1Numbers.indexOf(number), number, numbers.length);
-    console.log(number, 'moves between', part1Numbers[newIndex], 'and', part1Numbers[newIndex + 1], 'from', part1Numbers.indexOf(number), 'to', newIndex);
-    
-    part1Numbers = moveElement(part1Numbers, part1Numbers.indexOf(number), newIndex);
-    console.log(part1Numbers.join(','));
-    
-}
+    const index = mixedSignal.indexOf(number);
 
-console.log(part1Numbers);
+    mixedSignal.splice(index, 1);
+    // console.log(mixedSignal.join(','));
+
+    let newIndex = (index + Math.floor(number)) % mixedSignal.length
+    if (newIndex < 0) {
+        newIndex += mixedSignal.length
+    }
+
+    if (newIndex === 0) {
+        newIndex = mixedSignal.length
+    }
+
+    // console.log(number, 'moves between', mixedSignal[newIndex], 'and', mixedSignal[(newIndex + 1) % mixedSignal.length], index, newIndex);
+
+
+
+    mixedSignal.splice(newIndex, 0, number);
+    // console.log(mixedSignal.join(','));
+
+    mixedSignal = mixedSignal.filter(x => !Number.isNaN(x))
+
+    // console.log(Math.floor(number), 'moved', mixedSignal.map(Math.floor).join(','), mixedSignal.reduce((bool, val, idx) => bool && (val === norm[i][idx]), true));
+}
+const zeroIndex = mixedSignal.indexOf(0)
+console.log(Math.floor(mixedSignal[(zeroIndex + 1_000) % mixedSignal.length]), Math.floor(mixedSignal[(zeroIndex + 2_000) % mixedSignal.length]), Math.floor(mixedSignal[(zeroIndex + 3_000) % mixedSignal.length]));
+console.log(Math.floor(mixedSignal[(zeroIndex + 1_000) % mixedSignal.length]) + Math.floor(mixedSignal[(zeroIndex + 2_000) % mixedSignal.length]) + Math.floor(mixedSignal[(zeroIndex + 3_000) % mixedSignal.length]));
