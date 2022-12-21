@@ -2,6 +2,8 @@ const DEV_MODE = false;
 const INPUT_FILE = `data/${DEV_MODE ? "test" : "input"}.txt`;
 const text = await Deno.readTextFile(INPUT_FILE);
 
+type MonkeyMap = Map<string, number | [string, string, string]>;
+
 const data = new Map<string, number | [string, string, string]>();
 text.trim().split("\n").forEach((description) => {
   const [name, numberOrJob] = description.split(":");
@@ -15,7 +17,7 @@ text.trim().split("\n").forEach((description) => {
 });
 
 const calculateMonkeyValue = (
-  data: Map<string, number | [string, string, string]>,
+  data: MonkeyMap,
   name = "root",
 ): number => {
   const numberOrJob = data.get(name)!;
@@ -42,8 +44,6 @@ const calculateMonkeyValue = (
         result = val1 / val2;
         break;
     }
-    // update entry to avoid performing operation multiple times
-    data.set(name, result);
     return result;
   }
 };
