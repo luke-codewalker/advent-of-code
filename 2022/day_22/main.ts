@@ -1,4 +1,4 @@
-const DEV_MODE = false;
+const DEV_MODE = true;
 const INPUT_FILE = `data/${DEV_MODE ? "test" : "input"}.txt`;
 const text = await Deno.readTextFile(INPUT_FILE);
 
@@ -66,7 +66,7 @@ const getLastTileIndexInColumn = (map: string[][], col: number): number => {
 console.time("part_1_time");
 let currentRow = 0;
 let currentCol = getFirstTileIndexInRow(map, currentRow);
-
+const path: { x: number; y: number }[] = [];
 for (const instruction of instructions) {
   if (typeof instruction !== "number") {
     currentDirection = changeDirection(currentDirection, instruction);
@@ -106,8 +106,22 @@ for (const instruction of instructions) {
         currentCol = newCol;
         currentRow = newRow;
       }
+      path.push({ x: currentCol, y: currentRow });
     }
   }
+}
+
+// console.clear();
+for (let i = 0; i < map.length; i++) {
+  let rowString = "";
+  for (let j = 0; j < map[i].length; j++) {
+    if (path.find((pos) => pos.x === j && pos.y === i)) {
+      rowString += "O";
+    } else {
+      rowString += map[i][j];
+    }
+  }
+  console.log(rowString);
 }
 
 const getDirectionValue = (dir: Direction): number => {
