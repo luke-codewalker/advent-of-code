@@ -1,150 +1,146 @@
-const DEV_MODE = true;
+const DEV_MODE = false;
 const INPUT_FILE = `data/${DEV_MODE ? "test" : "input"}.txt`;
 const text = await Deno.readTextFile(INPUT_FILE);
 
-const lines = text.split("\n");
+type Facing = "R" | "D" | "L" | "U";
+const facings: Facing[] = [
+  "R",
+  "D",
+  "L",
+  "U",
+];
 
-type Direction = "R" | "L" | "U" | "D";
-const compass: Direction[] = ["R", "D", "L", "U"];
-
-let currentDirection: Direction = "R";
-
-const changeDirection = (currentDir: Direction, turn: "R" | "L"): Direction => {
-  const currentIndex = compass.indexOf(currentDir);
-  const newIndex = turn === "R" ? currentIndex + 1 : currentIndex - 1;
-  return compass[
-    (newIndex % compass.length) + (newIndex < 0 ? compass.length : 0)
-  ];
+type Tile = "." | "#";
+type Row = (Tile | " ")[];
+type PeekResult = {
+  x: number;
+  y: number;
+  tile: Tile;
 };
 
-const map: string[][] = [];
-let instructions: ("L" | "R" | number)[] = [];
-let isForMap = true;
+class Board {
+  rows: Row[] = [];
 
-for (const line of lines) {
-  if (!isForMap) {
-    instructions = line.match(/(\d+|\D+)/g)!.map((x) =>
-      Number.isNaN(parseInt(x)) ? x as ("L" | "R") : parseInt(x)
-    );
+  addRow(row: Row) {
+    this.rows.push(row);
   }
 
-  if (line === "") {
-    isForMap = false;
-  }
+  peek(oldX: number, oldY: number, facing: Facing): PeekResult {
+    // calculate new potential position
+    const x = facing === "R" ? oldX + 1 : facing === "L" ? oldX - 1 : oldX;
+    const y = facing === "D" ? oldY + 1 : facing === "U" ? oldY - 1 : oldY;
 
-  if (isForMap) {
-    map.push(line.split("").map((x) => (x === "#" || x === ".") ? x : "X"));
-  }
-}
-
-const getFirstTileIndexInRow = (map: string[][], row: number): number => {
-  return map[row].findIndex((char) => char === "." || char === "#");
-};
-
-const getFirstTileIndexInColumn = (map: string[][], col: number): number => {
-  let row = 0;
-  while (map[row][col] !== "." && map[row][col] !== "#") {
-    row++;
-  }
-  return row;
-};
-
-const getLastTileIndexInColumn = (map: string[][], col: number): number => {
-  let row = 0;
-  let endReached = false;
-  let tilesVisited = false;
-  while (!endReached) {
-    endReached = (tilesVisited && !map[row + 1]?.[col]) ||
-      (map[row][col] !== "X" && map[row + 1][col] === "X");
-    tilesVisited = !!map[row][col] &&
-      (map[row][col] === "#" || map[row][col] === ".");
-    row++;
-  }
-  return row - 1;
-};
-
-console.time("part_1_time");
-let currentRow = 0;
-let currentCol = getFirstTileIndexInRow(map, currentRow);
-const path: { x: number; y: number }[] = [];
-for (const instruction of instructions) {
-  if (typeof instruction !== "number") {
-    currentDirection = changeDirection(currentDirection, instruction);
-  } else {
-    for (let i = 0; i < instruction; i++) {
-      let nextChar = "";
-      let newCol = currentCol;
-      let newRow = currentRow;
-      if (currentDirection === "R") {
-        newCol = Math.max(
-          (currentCol + 1) % map[currentRow].length,
-          getFirstTileIndexInRow(map, currentRow),
-        );
-
-        nextChar = map[currentRow][newCol];
-      } else if (currentDirection === "L") {
-        newCol = (currentCol - 1) % map[currentRow].length;
-        if (newCol < getFirstTileIndexInRow(map, currentRow)) {
-          newCol = map[currentCol].length - 1;
-        }
-        nextChar = map[currentRow][newCol];
-      } else if (currentDirection === "U") {
-        newRow = currentRow - 1;
-        if (newRow < getFirstTileIndexInColumn(map, currentCol)) {
-          newRow = getLastTileIndexInColumn(map, currentCol);
-        }
-        nextChar = map[newRow][currentCol];
-      } else if (currentDirection === "D") {
-        newRow = currentRow + 1;
-        if (newRow > getLastTileIndexInColumn(map, currentCol)) {
-          newRow = getFirstTileIndexInColumn(map, currentCol);
-        }
-        nextChar = map[newRow][currentCol];
-      }
-
-      if (nextChar !== "#") {
-        currentCol = newCol;
-        currentRow = newRow;
-      }
-      path.push({ x: currentCol, y: currentRow });
+    // check tile at new position and return if still within board
+    const tile = this.rows[y]?.[x] as Tile | undefined ?? " ";
+    if (tile !== " ") {
+      return { x, y, tile };
     }
-  }
-}
 
-// console.clear();
-for (let i = 0; i < map.length; i++) {
-  let rowString = "";
-  for (let j = 0; j < map[i].length; j++) {
-    if (path.find((pos) => pos.x === j && pos.y === i)) {
-      rowString += "O";
+    // peeking over edge of board, need to wrap around
+    if (facing === "R") {
+      const row = this.rows[y];
+      const newX = row.lastIndexOf(" ") + 1;
+      const tile = row[newX] as "." | "#";
+      return { x: newX, y, tile };
+    } else if (facing === "L") {
+      const row = this.rows[y];
+      const newX = row.length - 1;
+      const tile = row[newX] as "." | "#";
+      return { x: newX, y, tile };
+    } else if (facing === "D") {
+      const column = this.rows.map((row) => row[x] ?? " ").join("").trimEnd();
+      const newY = column.lastIndexOf(" ") + 1;
+      const tile = column[newY] as "." | "#";
+      return { x, y: newY, tile };
     } else {
-      rowString += map[i][j];
+      const column = this.rows.map((row) => row[x] ?? " ").join("").trimEnd();
+      const newY = column.length - 1;
+      const tile = column[newY] as "." | "#";
+      return { x, y: newY, tile };
     }
   }
+}
+
+const lines = text.split("\n");
+const board = new Board();
+let instructions: string[] = [];
+let readingBoard = true;
+for (const line of lines) {
+  if (line === "") {
+    readingBoard = false;
+    continue;
+  }
+
+  if (readingBoard) {
+    board.addRow(line as unknown as Row);
+  } else {
+    instructions = line.match(/(\w\d+)/g)!;
+  }
+}
+
+const currentPos = {
+  x: board.rows[0].lastIndexOf(" ") + 1,
+  y: 0,
+};
+let facing: Facing = "R";
+const path = new Map<string, Facing>();
+for (const instruction of instructions) {
+  const [_, dir, amountString] = instruction.match(/([A-Z])?(\d+)/)!;
+  if (dir as "R" | "L") {
+    if (dir === "R") {
+      facing = facings[(facings.indexOf(facing) + 1) % facings.length];
+    } else {
+      let newIndex: number = (facings.indexOf(facing) - 1) % facings.length;
+      if (newIndex < 0) {
+        newIndex += facings.length;
+      }
+      facing = facings[newIndex];
+    }
+  }
+
+  const amount = parseInt(amountString)!;
+
+  for (let i = 0; i < amount; i++) {
+    const newTile = board.peek(currentPos.x, currentPos.y, facing);
+    if (newTile.tile === ".") {
+      path.set(`${currentPos.x},${currentPos.y}`, facing);
+      currentPos.x = newTile.x;
+      currentPos.y = newTile.y;
+    } else {
+      break;
+    }
+  }
+}
+
+for (let y = 0; y < board.rows.length; y++) {
+  const row = board.rows[y];
+  let rowString = "";
+  for (let x = 0; x < row.length; x++) {
+    let tile: string = row[x];
+    if (path.has(`${x},${y}`)) {
+      const facing = path.get(`${x},${y}`);
+      switch (facing) {
+        case "D":
+          tile = "v";
+          break;
+        case "U":
+          tile = "^";
+          break;
+        case "L":
+          tile = "<";
+          break;
+        case "R":
+          tile = ">";
+          break;
+      }
+    }
+    rowString += tile;
+  }
+
   console.log(rowString);
 }
 
-const getDirectionValue = (dir: Direction): number => {
-  switch (dir) {
-    case "R":
-      return 0;
-    case "D":
-      return 1;
-    case "L":
-      return 2;
-    case "U":
-      return 3;
-  }
-};
-
 console.log(
-  "Part 1:",
-  "row",
-  currentRow + 1,
-  "col",
-  currentCol + 1,
-  "->",
-  1_000 * (currentRow + 1) + 4 * (currentCol + 1) +
-    getDirectionValue(currentDirection),
+  (4 * (currentPos.x + 1)) + (1000 * (currentPos.y + 1)) +
+    facings.indexOf(facing),
 );
-console.timeEnd("part_1_time");
