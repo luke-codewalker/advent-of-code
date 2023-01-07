@@ -1,0 +1,5 @@
+{
+    "tasks": {
+      "get": "deno run --allow-read --allow-net --allow-write cli/getInput.ts"
+    }
+  }

@@ -1,2 +1,4 @@
 node_modules
 build
+.session_cookie
+*/**/input.txt
