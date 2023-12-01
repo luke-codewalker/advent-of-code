@@ -1,0 +1,4 @@
+// Advent of Code solution for <%= it.day %>.12.<%= it.year %>
+
+const puzzleInput = await Deno.readTextFile(Deno.cwd() + "/<%= it.year %>/day_<%= it.day %>/data/input.txt");
+const testData = await Deno.readTextFile(Deno.cwd() + "/<%= it.year %>/day_<%= it.day %>/data/test.txt");
