@@ -4,7 +4,7 @@ const viewpath = Deno.cwd() + "/cli/templates/";
 const eta = new Eta({ views: viewpath, cache: true });
 
 const year = 2023;
-const day = 1;
+const day = 2;
 const res = await fetch(`https://adventofcode.com/${year}/day/${day}/input`, {
   headers: {
     "Cookie": `session=${sessionCookie}`,
