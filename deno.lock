@@ -1,5 +1,16 @@
 {
-  "version": "2",
+  "version": "3",
+  "packages": {
+    "specifiers": {
+      "npm:@types/node": "npm:@types/node@18.16.19"
+    },
+    "npm": {
+      "@types/node@18.16.19": {
+        "integrity": "sha512-IXl7o+R9iti9eBW4Wg2hx1xQDig183jj7YLn8F7udNceyfkbn1ZxmzZXuak20gR40D7pIkIY1kYGx5VIGbaHKA==",
+        "dependencies": {}
+      }
+    }
+  },
   "remote": {
     "https://deno.land/x/eta@v3.0.3/src/compile-string.ts": "e919c1a5e2cf460dbbd93047ab3548a630e5eb5c7fa019335c08e95b50e86cd7",
     "https://deno.land/x/eta@v3.0.3/src/compile.ts": "146782227ddd5c423d07dedb2be40a2a5643c7429d9a3af5ac9a79c21bf7ae95",
