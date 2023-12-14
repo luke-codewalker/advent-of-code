@@ -41,6 +41,15 @@ class Schematic {
       this.getNeighbouringSymbolsForNumber(number).length > 0
     );
   }
+
+  getNeighbouringNumbersForSymbol(symbol: Symbol): PartNumber[] {
+    return this.numbers.filter((number) => {
+      return number.x <= symbol.x + 1 &&
+        number.x + number.digits >= symbol.x &&
+        number.y <= symbol.y + 1 &&
+        number.y >= symbol.y - 1;
+    });
+  }
 }
 
 // Part 1
@@ -76,9 +85,17 @@ const rendering =
   `<html><body><div style="font-family:monospace;font-size: 12px;">
    ${
     lines.map((line, index) => {
-        return `<div>${[...line].map((_, charIndex) => `<div style="position: absolute; top:${index * 12}px; left:${charIndex * 12 * 0.6}px; border: 1px solid rgba(0,0,0,0.125); width:${12 * 0.6}px; height:12px"></div>`).join('')}</div>`
-    }).join('')
-   }
+      return `<div>${
+        [...line].map((_, charIndex) =>
+          `<div style="position: absolute; top:${index * 12}px; left:${
+            charIndex * 12 * 0.6
+          }px; border: 1px solid rgba(0,0,0,0.125); width:${
+            12 * 0.6
+          }px; height:12px"></div>`
+        ).join("")
+      }</div>`;
+    }).join("")
+  }
     ${
     schematic.numbers.map((number) =>
       `<div 
@@ -98,7 +115,14 @@ const rendering =
       `<div 
         style="position: absolute; left:${symbol.x * 12 * 0.6}px; top:${
         symbol.y * 12
-      }px;">
+      }px;
+      ${
+        symbol.value === "*" &&
+          schematic.getNeighbouringNumbersForSymbol(symbol).length === 2
+          ? "color: orange;"
+          : ""
+      }
+      ">
         ${symbol.value}
         </div>`
     ).join("")
@@ -110,3 +134,17 @@ const data = encoder.encode(rendering);
 Deno.writeFileSync("rendering.html", data);
 
 console.log(`Part 1: ${sumOfValidPartNumbers}`);
+
+// Part 2
+const sumOfGearRatios = schematic.symbols
+  .filter((symbol) => symbol.value === "*")
+  .map((symbol) =>
+    schematic.getNeighbouringNumbersForSymbol(symbol)
+  )
+  .filter(numbers => numbers.length === 2)
+  .map(([gear1, gear2]) => {
+    return gear1.value * gear2.value
+  })
+  .reduce((sum, num) => sum + num);
+
+  console.log(`Part 2: ${sumOfGearRatios}`);
