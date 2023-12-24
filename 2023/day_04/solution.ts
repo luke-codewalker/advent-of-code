@@ -24,6 +24,7 @@ const cards: [WinningNumbers, Numbers][] = lines
     return [winningNumbers, numbers];
   });
 
+// Part 1:
 const winningNumbers: number[][] = cards.map(([winNumbers, numbers]) => {
   return numbers.filter((n) => winNumbers.includes(n));
 });
@@ -33,3 +34,18 @@ const points = winningNumbers.map((numbers) =>
 ).reduce((sum, n) => sum + n);
 
 console.log(points);
+
+// Part 2:
+const additionalCards = new Array(cards.length).fill(0);
+const finalCards = winningNumbers.map((numbers) => {
+  const wins = numbers.length;
+  const cardInstances = 1 + additionalCards.shift();
+
+  for (let i = 0; i < wins; i++) {
+    additionalCards[i] += cardInstances;
+  }
+
+  return cardInstances;
+}).reduce((sum, n) => sum + n);
+
+console.log(finalCards);
